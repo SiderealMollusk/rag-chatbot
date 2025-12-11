@@ -4,7 +4,7 @@ import argparse
 import time
 from celery import Celery
 from celery.result import AsyncResult
-from core.common import setup_logging, get_redis_url, logger
+from core.common import setup_logging, get_redis_url, logger, require_context
 
 app = Celery('movie_bible', 
              broker=get_redis_url(),
@@ -35,6 +35,7 @@ def verify_task(task_name, result):
 
 def main():
     setup_logging()
+    require_context('shell')
     # Note: This verifier is mostly illustrative because we don't have the Task IDs linked to the manifest 
     # unless we logged them during dispatch.
     # In a real system, 'dispatch.py' would output a 'run_log.jsonl' linking Manifest Entry -> Job ID.

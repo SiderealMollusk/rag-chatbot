@@ -2,7 +2,7 @@ import sys
 import json
 import argparse
 from celery import Celery
-from core.common import setup_logging, get_redis_url, logger
+from core.common import setup_logging, get_redis_url, logger, require_context
 from core.schema import ManifestEntry
 
 # Setup Celery Client
@@ -12,6 +12,7 @@ app = Celery('movie_bible',
 
 def main():
     setup_logging()
+    require_context('shell')
     parser = argparse.ArgumentParser(description="Dispatch jobs from a manifest")
     parser.add_argument("manifest", help="Path to manifest.jsonl")
     parser.add_argument("--backlog", help="Push to Redis List (Backlog) instead of executing immediately", default=None)

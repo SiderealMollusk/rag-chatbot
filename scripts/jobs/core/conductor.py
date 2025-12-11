@@ -5,12 +5,13 @@ import time
 import redis
 import math
 from celery import Celery
-from core.common import setup_logging, get_redis_url, logger
+from core.common import setup_logging, get_redis_url, logger, require_context
 from core.schema import ManifestEntry
 from core.config import GEMINI_RATE_LIMIT_RPM, METAL_QUEUE_DEPTH
 
 # Setup
 setup_logging()
+require_context('shell') # Enforce Docker execution
 app = Celery('movie_bible', 
              broker=get_redis_url(),
              backend=get_redis_url())

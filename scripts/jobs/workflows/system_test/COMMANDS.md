@@ -3,6 +3,7 @@
 ```bash
 # 1. Generate Plan
 python scripts/jobs/workflows/system_test/plan.py --mode stress_supervisor --count 10
+# (Needs to run inside container: docker exec movie_bible_shell python scripts/jobs/workflows/system_test/plan.py ...)
 
 # 2. Dispatch (Update filename!)
 docker exec -e PYTHONPATH=/scripts/jobs movie_bible_shell \

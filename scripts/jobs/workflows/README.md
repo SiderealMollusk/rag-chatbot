@@ -7,10 +7,12 @@ The system is designed so that all workflows follow the same lifecycle:
 
 | Stage | Action | Trigger | Inputs | Outputs | Context |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Plan** | Generate specific tasks | `python .../plan.py` | CLI Args (Mode, Count) | `manifest.jsonl` | **Host** |
+| Stage | Action | Trigger | Inputs | Outputs | Context |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **1. Plan** | Generate specific tasks | `python .../plan.py` | CLI Args (Mode, Count) | `manifest.jsonl` | **Shell** |
 | **2. Dispatch** | Queue tasks | `python .../dispatch.py` | `manifest.jsonl` | Redis List (Backlog) | **Shell** |
 | **3. Execute** | Route & Run | `conductor.py` (Supervisor) | Redis Backlog | Workers (Metal/Cloud) | **Shell** |
-| **4. Verify** | Validate results | `verify.py` / Manual | Completion State | Logs / Receipts | **Host** |
+| **4. Verify** | Validate results | `verify.py` / Manual | Completion State | Logs / Receipts | **Shell** |
 
 ---
 
@@ -27,10 +29,11 @@ Validates system stability, supervisor logic, and rate limiting.
 *   **Target Backlog:** `backlog:stress` (Convention)
 *   **Example:**
     ```bash
-    # Plan
-    python scripts/jobs/workflows/system_test/plan.py --mode stress_supervisor --count 10
+    # Plan (Run in Shell)
+    docker exec movie_bible_shell \
+      python scripts/jobs/workflows/system_test/plan.py --mode stress_supervisor --count 10
     
-    # Dispatch
+    # Dispatch (Run in Shell)
     docker exec -e PYTHONPATH=/scripts/jobs movie_bible_shell \
       python /scripts/jobs/core/dispatch.py \
       /scripts/jobs/manifests/system_test_stress_supervisor_01.jsonl \

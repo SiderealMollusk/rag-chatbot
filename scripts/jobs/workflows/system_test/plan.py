@@ -2,7 +2,7 @@ import sys
 import json
 import argparse
 import random
-from core.common import setup_logging, logger
+from core.common import setup_logging, logger, get_next_filename
 
 OUTPUT_DIR = "/scripts/jobs/manifests"
 
@@ -43,10 +43,35 @@ def generate_crud(count, latency=False):
         })
     return rows
 
+def generate_stress_supervisor(count):
+    rows = []
+    logger.info(f"Generating {count} Long-Running Supervisor Stress Tasks (90-150s)...")
+    for i in range(1, count + 1):
+        # Duration: 1.5 to 2.5 minutes (90 to 150 seconds)
+        duration = random.randint(90, 150)
+        
+        rows.append({
+            "id": f"Job-{i:02d}", # Explicit ID for logging
+            "task": "tasks.sleep_task",
+            "kwargs": {}, # Oops, diagnostics.py expects 'seconds' as arg or kwarg? 
+                          # Checking diagnostics.py: def sleep_task(self, seconds: int). 
+                          # Celery usually maps args/kwargs. 
+                          # Previous plan used "args": [duration]. 
+                          # The schema in conductor.py supports args/kwargs.
+                          # Let's align with plan.py's kwargs style if possible, or support args.
+            "args": [duration], 
+            "meta": { # ManifestEntry supports meta
+                "description": f"Sleeper Job {i}/{count} ({duration}s)",
+                "id": f"Job-{i:02d}"
+            }
+        })
+    return rows
+
 def main():
     setup_logging()
+    require_context('shell')
     parser = argparse.ArgumentParser(description="Generate System Test Manifests")
-    parser.add_argument("--mode", choices=["debug", "sleep", "crud", "crud_latency"], required=True)
+    parser.add_argument("--mode", choices=["debug", "sleep", "crud", "crud_latency", "stress_supervisor"], required=True)
     parser.add_argument("--count", type=int, default=5)
     args = parser.parse_args()
 
@@ -60,8 +85,10 @@ def main():
         data = generate_crud(args.count, latency=False)
     elif args.mode == "crud_latency":
         data = generate_crud(args.count, latency=True)
+    elif args.mode == "stress_supervisor":
+        data = generate_stress_supervisor(args.count)
         
-    outfile = f"{OUTPUT_DIR}/system_test_{args.mode}.jsonl"
+    outfile = get_next_filename(OUTPUT_DIR, f"system_test_{args.mode}")
     with open(outfile, 'w') as f:
         for row in data:
             f.write(json.dumps(row) + "\n")
