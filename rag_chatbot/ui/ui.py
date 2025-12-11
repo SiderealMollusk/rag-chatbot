@@ -287,7 +287,7 @@ class LocalChatbotUI:
                             model = gr.Dropdown(
                                 label="Choose Model:",
                                 choices=[
-                                    "llama3.1:8b-instruct-q8_0",
+                                    "llama3.1",
                                 ],
                                 value=None,
                                 interactive=True,

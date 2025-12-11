@@ -1,33 +1,47 @@
-services:
-  app:
-    container_name: app
-    build: .
-    ports:
-      - 7860:7860
-    volumes:
-      - .:/code
-    networks:
-      - local_network
+version: '3.8'
 
-  chromadb:
-    container_name: chromadb
-    image: chromadb/chroma:latest
-    ports:
-      - 8000:8000
+services:
+  # The Brains: Python/FastAPI
+  api:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: movie_bible_api
     volumes:
-      - ./data/chroma:/chroma/chroma
-    networks:
-      - local_network
-  ollama:
-    container_name: ollama
-    image: ollama/ollama:latest
+      - ./backend:/app
+      - ./data:/data
     ports:
-      - 11434:11434
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////data/bible.db
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # The Face: Next.js
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: movie_bible_web
     volumes:
-      - ./data/ollama:/root/.ollama
-    networks:
-      - local_network
-      
-networks:
-  local_network:
-    driver: bridge
+      - ./frontend:/app
+      # Don't mount node_modules to avoid host/container mismatch
+      - /app/node_modules 
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api
+
+  # The Tooling: CLI Runner (Optional, can just run locally)
+  cli:
+    build: 
+      context: ./cli
+      dockerfile: Dockerfile
+    container_name: movie_bible_cli
+    volumes:
+      - ./cli:/app
+      - ./data:/data
+    environment:
+      - DATABASE_URL=sqlite:////data/bible.db
+    command: tail -f /dev/null # Keep alive
