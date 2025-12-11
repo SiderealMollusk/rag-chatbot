@@ -4,7 +4,7 @@ import json
 import random
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
-from backend.tasks import app
+from tasks import app
 from loguru import logger
 
 # Config

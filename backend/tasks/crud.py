@@ -2,7 +2,7 @@ import time
 import uuid
 import sqlalchemy
 from sqlalchemy import create_engine, text
-from backend.tasks import app
+from tasks import app
 from loguru import logger
 import os
 

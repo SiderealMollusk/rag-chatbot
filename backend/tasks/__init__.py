@@ -14,6 +14,6 @@ app = Celery('movie_bible',
 
 # Register modules
 # We must import them so Celery finds the @task decorators
-import backend.tasks.diagnostics
-import backend.tasks.crud
-import backend.tasks.rag
+import tasks.diagnostics
+import tasks.crud
+import tasks.rag

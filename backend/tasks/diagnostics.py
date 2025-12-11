@@ -1,5 +1,5 @@
 import time
-from backend.tasks import app
+from tasks import app
 from loguru import logger
 
 @app.task(name="tasks.debug_task", bind=True)
