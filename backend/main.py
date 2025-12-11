@@ -153,3 +153,99 @@ def get_chapter_scenes(title: str):
     
     conn.close()
     return results
+
+@app.get("/entities/{entity_id}")
+def get_entity_details(entity_id: str):
+    conn = get_db()
+    
+    # 1. Get Entity Info
+    row = conn.execute("SELECT * FROM entities WHERE id = ?", (entity_id,)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Entity not found")
+    
+    entity = {
+        "id": row["id"],
+        "name": row["name"],
+        "category": row["category"],
+        "data": json.loads(row["data"]) if row["data"] else None
+    }
+    
+    # 2. Get Appearances (Scenes)
+    appearances_sql = """
+        SELECT 
+            s.id, s.chapter_title, s.sequence_index, s.summary, m.role, m.context
+        FROM scene_mentions m
+        JOIN scenes s ON m.scene_id = s.id
+        WHERE m.entity_id = ?
+        ORDER BY s.sequence_index
+    """
+    rows = conn.execute(appearances_sql, (entity_id,)).fetchall()
+    conn.close()
+    
+    entity["appearances"] = [{
+        "scene_id": r["id"],
+        "chapter": r["chapter_title"],
+        "summary": r["summary"],
+        "role": r["role"],
+        "context": r["context"]
+    } for r in rows]
+
+    return entity
+
+class TextChunk(BaseModel):
+    id: str
+    content: str
+    source_file: str
+    chapter_title: str
+    scene_index: int
+    paragraph_index: int
+    location_name: str
+    primary_characters: str
+    tags: str
+
+class SearchResponse(BaseModel):
+    total: int
+    results: List[TextChunk]
+
+@app.get("/corpus/search", response_model=SearchResponse)
+def search_corpus(q: Optional[str] = None, limit: int = 50, offset: int = 0):
+    conn = get_db()
+    
+    if q:
+        # FTS5 Match
+        try:
+            # Get Total
+            count_sql = """
+                SELECT COUNT(*) 
+                FROM text_chunks_fts 
+                WHERE text_chunks_fts MATCH ?
+            """
+            total = conn.execute(count_sql, (q,)).fetchone()[0]
+            
+            # Get Results
+            sql = """
+                SELECT t.* 
+                FROM text_chunks t
+                JOIN text_chunks_fts f ON t.rowid = f.rowid
+                WHERE text_chunks_fts MATCH ? 
+                ORDER BY f.rank
+                LIMIT ? OFFSET ?
+            """
+            rows = conn.execute(sql, (q, limit, offset)).fetchall()
+        except sqlite3.OperationalError:
+            conn.close()
+            raise HTTPException(status_code=400, detail="Invalid search query syntax")
+    else:
+        # Get Total
+        total = conn.execute("SELECT COUNT(*) FROM text_chunks").fetchone()[0]
+        
+        # Get Results
+        sql = "SELECT * FROM text_chunks LIMIT ? OFFSET ?"
+        rows = conn.execute(sql, (limit, offset)).fetchall()
+        
+    conn.close()
+    return {
+        "total": total,
+        "results": [dict(r) for r in rows]
+    }

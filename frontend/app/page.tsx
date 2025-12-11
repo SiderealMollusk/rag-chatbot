@@ -21,8 +21,11 @@ export default function Home() {
 
         <div className="p-6 bg-neutral-800 rounded border border-neutral-700">
           <h3 className="text-xl font-bold text-amber-500 mb-2">Quick Actions</h3>
-          <a href="/explorer" className="inline-block bg-neutral-700 hover:bg-neutral-600 text-white px-4 py-2 rounded text-sm transition-colors">
+          <a href="/explorer" className="inline-block bg-neutral-700 hover:bg-neutral-600 text-white px-4 py-2 rounded text-sm transition-colors mr-3">
             Launch Data Explorer &rarr;
+          </a>
+          <a href="/corpus" className="inline-block bg-neutral-700 hover:bg-neutral-600 text-white px-4 py-2 rounded text-sm transition-colors">
+            Browse Corpus &rarr;
           </a>
         </div>
       </div>

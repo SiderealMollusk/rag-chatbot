@@ -79,19 +79,20 @@ export default function ChapterDetailPage() {
                                     <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3">Connected Elements</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {scene.mentions.map(m => (
-                                            <span
+                                            <Link
                                                 key={m.id}
+                                                href={`/wiki/${m.id}`}
                                                 className={`
-                                                    text-xs px-2 py-1 rounded border border-neutral-800
-                                                    ${m.category === 'Character' ? 'text-blue-300 bg-blue-900/10' : ''}
-                                                    ${m.category === 'Location' ? 'text-green-300 bg-green-900/10' : ''}
-                                                    ${m.category === 'Faction' ? 'text-red-300 bg-red-900/10' : ''}
-                                                    ${m.category === 'Technology' ? 'text-purple-300 bg-purple-900/10' : ''}
+                                                    text-xs px-2 py-1 rounded border border-neutral-800 hover:ring-1 hover:ring-opacity-50 transition-all cursor-pointer block
+                                                    ${m.category === 'Character' ? 'text-blue-300 bg-blue-900/10 hover:ring-blue-400' : ''}
+                                                    ${m.category === 'Location' ? 'text-green-300 bg-green-900/10 hover:ring-green-400' : ''}
+                                                    ${m.category === 'Faction' ? 'text-red-300 bg-red-900/10 hover:ring-red-400' : ''}
+                                                    ${m.category === 'Technology' ? 'text-purple-300 bg-purple-900/10 hover:ring-purple-400' : ''}
                                                 `}
                                             >
                                                 {m.name}
                                                 {m.role !== 'APPEARANCE' && <span className="opacity-50 ml-1">({m.role.toLowerCase()})</span>}
-                                            </span>
+                                            </Link>
                                         ))}
                                     </div>
                                 </div>

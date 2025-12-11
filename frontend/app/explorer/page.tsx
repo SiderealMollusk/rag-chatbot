@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 // Types (should arguably be in a separate file)
 type Entity = {
@@ -77,7 +78,11 @@ export default function ExplorerPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filtered.map(entity => (
-                            <div key={entity.id} className="bg-neutral-800/50 border border-neutral-800 p-4 rounded hover:border-amber-500/50 transition-colors group">
+                            <Link
+                                href={`/wiki/${entity.id}`}
+                                key={entity.id}
+                                className="bg-neutral-800/50 border border-neutral-800 p-4 rounded hover:border-amber-500/50 transition-colors group block"
+                            >
                                 <div className="flex justify-between items-start mb-2">
                                     <h4 className="font-bold text-neutral-200 group-hover:text-amber-400">{entity.name}</h4>
                                     <span className="text-[10px] uppercase tracking-wider bg-neutral-900 text-neutral-500 px-2 py-1 rounded">
@@ -94,7 +99,7 @@ export default function ExplorerPage() {
                                         </span>
                                     ))}
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

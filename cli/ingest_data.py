@@ -7,7 +7,7 @@ from typing import Dict, List
 DB_PATH = "/data/bible.db"
 # Map volume paths
 WIKI_INDEX_PATH = "/data/wiki_candidates/master_wiki_index.json"
-CHAPTER_ANALYSIS_DIR = "/data/chapter_analysis"
+CHAPTER_ANALYSIS_DIR = "/data/passes/01_scene_summary"
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
