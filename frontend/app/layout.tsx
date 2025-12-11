@@ -5,6 +5,7 @@ import './globals.css';
 const MENU_ITEMS = [
   { name: 'Data Explorer', href: '/explorer' },
   { name: 'Timeline', href: '/timeline', disabled: false },
+  { name: 'Job Supervisor', href: '/jobs', disabled: false },
   { name: 'Characters', href: '/characters', disabled: true },
   { name: 'Locations', href: '/locations', disabled: true },
   { name: 'Graph View', href: '/graph', disabled: true },

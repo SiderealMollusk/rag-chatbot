@@ -249,3 +249,30 @@ def search_corpus(q: Optional[str] = None, limit: int = 50, offset: int = 0):
         "total": total,
         "results": [dict(r) for r in rows]
     }
+
+# --- Job System Monitoring ---
+import redis
+import os
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+
+@app.get("/jobs/status")
+def get_job_status():
+    r = redis.from_url(CELERY_BROKER_URL)
+    
+    # Simple Counts
+    backlog = r.llen("backlog:stress")
+    metal = r.llen("queue_metal")
+    cloud = r.llen("queue_cloud")
+    
+    # "Done" Count (Expensive but functional for dev)
+    # Using keys() is blocking on large DBs, but fine for our scale
+    done_keys = r.keys("celery-task-meta-*")
+    done = len(done_keys)
+    
+    return {
+        "backlog": backlog,
+        "metal": metal,
+        "cloud": cloud,
+        "done": done
+    }

@@ -66,12 +66,27 @@ def generate_stress_supervisor(count):
             }
         })
     return rows
+def generate_demo(count):
+    rows = []
+    logger.info(f"Generating {count} Demo Tasks (30s fixed duration)...")
+    for i in range(1, count + 1):
+        duration = 30
+        rows.append({
+            "task": "tasks.sleep_task",
+            "#args": [duration],
+            "kwargs": {"seconds": duration},
+            "meta": {
+                "description": f"Demo Job {i}/{count} ({duration}s)",
+                "id": f"Job-{i:02d}"
+            }
+        })
+    return rows
 
 def main():
     setup_logging()
     require_context('shell')
     parser = argparse.ArgumentParser(description="Generate System Test Manifests")
-    parser.add_argument("--mode", choices=["debug", "sleep", "crud", "crud_latency", "stress_supervisor"], required=True)
+    parser.add_argument("--mode", choices=["debug", "sleep", "crud", "crud_latency", "stress_supervisor", "demo"], required=True)
     parser.add_argument("--count", type=int, default=5)
     args = parser.parse_args()
 
@@ -87,6 +102,8 @@ def main():
         data = generate_crud(args.count, latency=True)
     elif args.mode == "stress_supervisor":
         data = generate_stress_supervisor(args.count)
+    elif args.mode == "demo":
+        data = generate_demo(args.count)
         
     outfile = get_next_filename(OUTPUT_DIR, f"system_test_{args.mode}")
     with open(outfile, 'w') as f:
