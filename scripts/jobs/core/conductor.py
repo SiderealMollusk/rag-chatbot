@@ -77,13 +77,14 @@ def run_conductor(backlog_key: str):
                     # Dispatch
                     res = app.send_task(task_name, args=entry.args, kwargs=entry.kwargs, queue=QUEUE_METAL)
                     
-                    logger.info(f"Fed Metal [Q:{metal_len}]: {res.id}")
+                    # Log Format: "Job {id} assigned to Metal (Queue: {len})"
+                    job_id = entry.meta.get('id', 'Unknown')
+                    logger.info(f"Job {job_id} assigned to Metal (Queue: {metal_len})")
+                    
                     action_taken = True
                     continue # Loop fast to refill metal if needed
                 except Exception as e:
                     logger.error(f"Failed to dispatch: {e}")
-        else:
-             logger.debug("M1 is full, trying Gemini")
 
         # --- RULE 2: FEED CLOUD (If Metal Full) ---
         if cloud_len < LIMIT_CLOUD_DEPTH:
@@ -101,15 +102,16 @@ def run_conductor(backlog_key: str):
                         res = app.send_task(task_name, args=entry.args, kwargs=entry.kwargs, queue=QUEUE_CLOUD)
                         
                         cloud_tokens -= 1.0
-                        logger.info(f"Fed Cloud [Q:{cloud_len}][Tokens:{cloud_tokens:.1f}]: {res.id}")
+                        
+                        # Log Format: "Job {id} assigned to Gemma (Budget: {tokens}/{cap})"
+                        job_id = entry.meta.get('id', 'Unknown')
+                        logger.info(f"Job {job_id} assigned to Gemma (Budget: {cloud_tokens:.1f}/{CLOUD_BUCKET_CAPACITY})")
+                        
                         action_taken = True
                      except:
                         logger.error("Failed dispatch cloud")
-            else:
-                 logger.debug("Gemini near rate limit")
         
         if not action_taken:
-            logger.debug("No compute available holding")
             # We have work, but workers are busy/limited.
             time.sleep(0.5)
 

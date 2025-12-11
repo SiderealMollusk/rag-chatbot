@@ -15,7 +15,7 @@ def sleep_task(self, seconds: int):
     """
     Sleeps for N seconds to test concurrency/timeouts.
     """
-    logger.bind(task_id=self.request.id).info(f"Sleeping for {seconds}s...")
+    logger.bind(task_id=self.request.id).info(f"Job Started: Sleeping for {seconds}s...")
     time.sleep(seconds)
-    logger.bind(task_id=self.request.id).success("Woke up!")
+    logger.bind(task_id=self.request.id).success(f"Job Finished: Woke up after {seconds}s!")
     return {"status": "slept", "duration": seconds}
