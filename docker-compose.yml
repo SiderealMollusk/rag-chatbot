@@ -118,3 +118,12 @@ services:
     environment:
       - DATABASE_URL=sqlite:////data/bible.db
     command: tail -f /dev/null # Keep alive
+
+  # Log Aggregator
+  dozzle:
+    container_name: movie_bible_logs
+    image: amir20/dozzle
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8080:8080

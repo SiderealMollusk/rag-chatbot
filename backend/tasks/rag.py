@@ -60,8 +60,9 @@ def process_batch_gemini(self, batch_ids: list, batch_data: list):
     batch_text = "\n".join([json.dumps(r) for r in batch_data])
     prompt = f"{system_prompt}\n\nINPUT DATA:\n{batch_text}"
     
-    # Use the 2.5 Flash model which proved available
-    model = genai.GenerativeModel("gemini-2.5-flash", safety_settings=SAFETY_SETTINGS)
+    # Use the configured model
+    from core.config import GEMINI_MODEL_NAME
+    model = genai.GenerativeModel(GEMINI_MODEL_NAME, safety_settings=SAFETY_SETTINGS)
 
     try:
         log.info(f"Sending Batch {len(batch_ids)} items to Cloud...")
