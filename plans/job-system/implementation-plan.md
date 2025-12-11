@@ -1,39 +1,6 @@
-# Job System Implementation Plan
+# Job System Implementation Plan (V4: Hybrid Supervisor)
 
 ## Objective
-Establish a robust, "Manifest-Driven" job execution system for managing long-running background tasks (like LLM processing) using Celery, Redis, and Loguru.
-
-## Core Philosophy: The Manifest Pattern
-1.  **Plan:** We authorize work by generating a `manifest.jsonl` (The Work Order).
-2.  **Dispatch:** We execute the work order by feeding it to the Dispatcher.
-3.  **Verify:** We confirm success by auditing the **Execution Receipts** returned by the workers.
-
-## Components
-
-### 1. Infrastructure (Docker)
-- **Service:** `shell` (Already active) - Shared workspace.
-- **Service:** `redis` (Already active) - Broker & Result Store.
-- **Service:** `worker` (Already active) - Executes the tasks.
-- **Service:** `flower` (Already active) - Dashboard.
-
-### 2. The Job Lifecycle Scripts (`scripts/jobs/`)
-We will use a "Workflow Plugin" structure to separate concerns. Each workflow type (System Test vs Production) has its own planning/verification logic, sharing a generic dispatcher.
-
-```
-scripts/jobs/
-├── core/
-│   ├── dispatch.py       # Generic: Reads ANY manifest -> Redis
-│   ├── common.py         # Shared utils (Loguru setup, Paths)
-│   └── schema.py         # Pydantic models for Manifest Entry
-│
-├── workflows/            # Domain-Specific Logic
-│   ├── system_test/      # Workflow 1: Infrastructure Validation
-│   │   ├── plan.py       # Generates debug/crud/sleep manifests
-│   │   └── verify.py     # Checks task receipts
-│   │
-│   └── gap_fill/         # Workflow 2: Corpus Repair
-│       ├── plan.py       # Scans DB/Corpus for gaps -> manifest
-│       └── verify.py     # Checks final DB row counts
 │
 └── manifests/            # The Output Artifacts
     ├── system_test_01.jsonl

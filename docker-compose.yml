@@ -39,11 +39,11 @@ services:
     ports:
       - "6379:6379"
 
-  worker:
+  worker_cloud:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: movie_bible_worker
+    container_name: movie_bible_worker_cloud
     volumes:
       - ./backend:/app
       - ./data:/data
@@ -52,7 +52,27 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-    command: celery -A tasks worker --loglevel=info
+    command: celery -A tasks worker -Q queue_cloud -c 10 --loglevel=info
+    depends_on:
+      - redis
+      - api
+
+  worker_metal:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: movie_bible_worker_metal
+    volumes:
+      - ./backend:/app
+      - ./data:/data
+    environment:
+      - DATABASE_URL=sqlite:////data/bible.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - OLLAMA_URL=http://host.docker.internal:11434/api/chat
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: celery -A tasks worker -Q queue_metal -c 1 --loglevel=info
     depends_on:
       - redis
       - api

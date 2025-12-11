@@ -12,8 +12,13 @@ app = Celery('movie_bible',
              broker=os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0'),
              backend=os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0'))
 
-# Register modules
-# We must import them so Celery finds the @task decorators
+# Register routes
+app.conf.task_routes = {
+    'tasks.rag.process_batch_gemini': {'queue': 'queue_cloud'},
+    'tasks.rag.process_batch_ollama': {'queue': 'queue_metal'},
+}
+
+# Import sub-modules to register tasks
 import tasks.diagnostics
 import tasks.crud
 import tasks.rag
