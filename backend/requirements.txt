@@ -2,3 +2,9 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
+celery
+redis
+flower
+python-multipart
+requests
+google-generativeai

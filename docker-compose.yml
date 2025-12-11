@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # The Brains: Python/FastAPI
   api:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: movie_bible_api
@@ -25,7 +25,7 @@ services:
     volumes:
       - ./frontend:/app
       # Don't mount node_modules to avoid host/container mismatch
-      - /app/node_modules 
+      - /app/node_modules
     ports:
       - "3000:3000"
     environment:
@@ -33,9 +33,62 @@ services:
     depends_on:
       - api
 
+  redis:
+    image: redis:alpine
+    container_name: movie_bible_redis
+    ports:
+      - "6379:6379"
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: movie_bible_worker
+    volumes:
+      - ./backend:/app
+      - ./data:/data
+    environment:
+      - DATABASE_URL=sqlite:////data/bible.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    command: celery -A tasks worker --loglevel=info
+    depends_on:
+      - redis
+      - api
+
+  flower:
+    image: mher/flower
+    container_name: movie_bible_flower
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+
+  shell:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: movie_bible_shell
+    volumes:
+      - ./backend:/app
+      - ./data:/data
+      - ./scripts:/scripts
+    environment:
+      - DATABASE_URL=sqlite:////data/bible.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    command: tail -f /dev/null
+    depends_on:
+      - redis
+      - api
+
   # The Tooling: CLI Runner (Optional, can just run locally)
   cli:
-    build: 
+    build:
       context: ./cli
       dockerfile: Dockerfile
     container_name: movie_bible_cli
