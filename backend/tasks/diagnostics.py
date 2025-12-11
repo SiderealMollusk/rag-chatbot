@@ -1,0 +1,21 @@
+import time
+from backend.tasks import app
+from loguru import logger
+
+@app.task(name="tasks.debug_task", bind=True)
+def debug_task(self, msg: str):
+    """
+    Simple echo task to verify connectivity.
+    """
+    logger.bind(task_id=self.request.id).info(f"DEBUG: {msg}")
+    return {"status": "ok", "echo": msg}
+
+@app.task(name="tasks.sleep_task", bind=True)
+def sleep_task(self, seconds: int):
+    """
+    Sleeps for N seconds to test concurrency/timeouts.
+    """
+    logger.bind(task_id=self.request.id).info(f"Sleeping for {seconds}s...")
+    time.sleep(seconds)
+    logger.bind(task_id=self.request.id).success("Woke up!")
+    return {"status": "slept", "duration": seconds}

@@ -7,4 +7,5 @@ redis
 flower
 python-multipart
 requests
+loguru
 google-generativeai
