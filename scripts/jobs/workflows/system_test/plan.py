@@ -2,7 +2,7 @@ import sys
 import json
 import argparse
 import random
-from core.common import setup_logging, logger, get_next_filename
+from core.common import setup_logging, logger, get_next_filename, require_context
 
 OUTPUT_DIR = "/scripts/jobs/manifests"
 

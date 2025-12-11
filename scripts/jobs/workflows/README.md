@@ -7,10 +7,12 @@ The system is designed so that all workflows follow the same lifecycle:
 
 | Stage | Action | Trigger | Inputs | Outputs | Context |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Plan** | Generate specific tasks | `python scripts/jobs/workflows/<WORKFLOW>/plan.py` | CLI Args | `manifest.jsonl` | **Shell Container** |
-| **2. Dispatch** | Queue tasks | `python scripts/jobs/core/dispatch.py` | `manifest.jsonl` | Redis List | **Shell Container** |
-| **3. Execute** | Route & Run | `python scripts/jobs/core/conductor.py` | Redis Backlog | Workers | **Shell Container** |
-| **4. Verify** | Validate results | `python scripts/jobs/workflows/<WORKFLOW>/verify.py` | Completion State | Logs | **Shell Container** |
+| **0. Access** | Enter Environment | `docker exec -it movie_bible_shell /bin/bash` | N/A | Interactive Session | **Host Terminal** |
+| **1. Setup** | Configure Env | `export PYTHONPATH=/scripts/jobs` | N/A | Environment Var | **Shell Container** |
+| **2. Plan** | Generate specific tasks | `python /scripts/jobs/workflows/<WORKFLOW>/plan.py` | CLI Args | `manifest.jsonl` | **Shell Container** |
+| **3. Dispatch** | Queue tasks | `python /scripts/jobs/core/dispatch.py` | `manifest.jsonl` | Redis List | **Shell Container** |
+| **4. Execute** | Route & Run | `python /scripts/jobs/core/conductor.py` | Redis Backlog | Workers | **Shell Container** |
+| **5. Verify** | Validate results | `python /scripts/jobs/workflows/<WORKFLOW>/verify.py` | Completion State | Logs | **Shell Container** |
 
 ---
 
@@ -27,13 +29,18 @@ Validates system stability, supervisor logic, and rate limiting.
 *   **Target Backlog:** `backlog:stress` (Convention)
 *   **Example:**
     ```bash
-    # Plan (Run in Shell)
-    docker exec movie_bible_shell \
-      python scripts/jobs/workflows/system_test/plan.py --mode stress_supervisor --count 10
+    ```bash
+    # 1. Access Shell
+    docker exec -it movie_bible_shell /bin/bash
+
+    # 2. Setup (Run inside shell)
+    export PYTHONPATH=/scripts/jobs
+
+    # 3. Plan
+    python /scripts/jobs/workflows/system_test/plan.py --mode stress_supervisor --count 10
     
-    # Dispatch (Run in Shell)
-    docker exec -e PYTHONPATH=/scripts/jobs movie_bible_shell \
-      python /scripts/jobs/core/dispatch.py \
+    # 4. Dispatch
+    python /scripts/jobs/core/dispatch.py \
       /scripts/jobs/manifests/system_test_stress_supervisor_01.jsonl \
       --backlog backlog:stress
     ```
