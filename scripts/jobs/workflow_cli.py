@@ -55,22 +55,24 @@ def create_workflow(name: str):
         # Write processed template
         output_path.write_text(template_content)
         
-        # Make plan.py executable
-        if output_filename == 'plan.py':
+        # Make Python files executable
+        if output_filename.endswith('.py'):
             os.chmod(output_path, 0o755)
     
     print(f"✅ Created workflow: {name}")
     print(f"📁 Location: {workflow_dir}/")
     print(f"")
     print(f"Files created:")
-    print(f"  - plan.py      (Task generator)")
-    print(f"  - README.md    (Documentation)")
+    print(f"  - plan.py       (Task generator)")
+    print(f"  - verify.py     (Result validator)")
+    print(f"  - README.md     (Workflow documentation)")
+    print(f"  - COMMANDS.md   (Execution steps)")
     print(f"")
     print(f"Next steps:")
     print(f"  1. Edit {workflow_dir}/plan.py")
     print(f"  2. Implement generate_{name}_tasks() logic")
     print(f"  3. Create your Celery task in backend/tasks/")
-    print(f"  4. Update README.md with workflow details")
+    print(f"  4. Update README.md and COMMANDS.md with workflow details")
 
 def list_workflows():
     """List all existing workflows."""
