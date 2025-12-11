@@ -4,7 +4,7 @@ import argparse
 import random
 from core.common import setup_logging, logger, get_next_filename, require_context
 
-OUTPUT_DIR = "/scripts/jobs/manifests"
+OUTPUT_DIR = "/data"
 
 def generate_debug(count):
     rows = []

@@ -94,7 +94,7 @@ services:
     container_name: movie_bible_shell
     volumes:
       - ./backend:/app
-      - ./data:/data
+      - ./data/shell:/data
       - ./scripts:/scripts
     environment:
       - DATABASE_URL=sqlite:////data/bible.db

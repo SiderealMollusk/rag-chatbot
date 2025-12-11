@@ -41,7 +41,7 @@ Validates system stability, supervisor logic, and rate limiting.
     
     # 4. Dispatch
     python /scripts/jobs/core/dispatch.py \
-      /scripts/jobs/manifests/system_test_stress_supervisor_01.jsonl \
+      /data/system_test_stress_supervisor_01.jsonl \
       --backlog backlog:stress
     ```
 

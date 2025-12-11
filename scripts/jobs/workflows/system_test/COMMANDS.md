@@ -12,7 +12,7 @@ python /scripts/jobs/workflows/system_test/plan.py --mode stress_supervisor --co
 
 # 3. Dispatch
 python /scripts/jobs/core/dispatch.py \
-  /scripts/jobs/manifests/system_test_stress_supervisor_01.jsonl \
+  /data/system_test_stress_supervisor_01.jsonl \
   --backlog backlog:stress
 ```
 
