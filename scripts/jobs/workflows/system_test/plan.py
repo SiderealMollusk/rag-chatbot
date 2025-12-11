@@ -85,13 +85,15 @@ def generate_demo(count):
 def main():
     setup_logging()
     require_context('shell')
-    parser = argparse.ArgumentParser(description="Generate System Test Manifests")
+    parser = argparse.ArgumentParser(description="Generate System Test Job Packages")
     parser.add_argument("--mode", choices=["debug", "sleep", "crud", "crud_latency", "stress_supervisor", "demo"], required=True)
     parser.add_argument("--count", type=int, default=5)
+    parser.add_argument("--strategy", choices=["hybrid_supervisor", "force_metal", "force_cloud"], default="hybrid_supervisor")
     args = parser.parse_args()
 
-    logger.info(f"Generating {args.mode} manifest with {args.count} tasks...")
+    logger.info(f"Generating {args.mode} job package with {args.count} tasks...")
     
+    # Generate task data
     if args.mode == "debug":
         data = generate_debug(args.count)
     elif args.mode == "sleep":
@@ -104,13 +106,46 @@ def main():
         data = generate_stress_supervisor(args.count)
     elif args.mode == "demo":
         data = generate_demo(args.count)
-        
-    outfile = get_next_filename(OUTPUT_DIR, f"system_test_{args.mode}")
-    with open(outfile, 'w') as f:
+    
+    # Create job package directory
+    from core.work_order import WorkOrder, WorkOrderManifest
+    from datetime import datetime
+    import os
+    
+    # Generate unique job ID
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    job_id = f"{args.mode}_{timestamp}"
+    job_dir = f"/data/jobs/{job_id}"
+    os.makedirs(job_dir, exist_ok=True)
+    
+    # Write manifest
+    manifest_path = f"{job_dir}/manifest.jsonl"
+    with open(manifest_path, 'w') as f:
         for row in data:
             f.write(json.dumps(row) + "\n")
-            
-    logger.success(f"Generated {len(data)} items to {outfile}")
+    
+    # Create work order
+    work_order = WorkOrder(
+        job_id=job_id,
+        name=f"{args.mode.replace('_', ' ').title()} - {args.count} tasks",
+        manifest=WorkOrderManifest(
+            path="manifest.jsonl",
+            count=len(data)
+        ),
+        routing_strategy=args.strategy,
+        backlog_key=f"job:{job_id}:backlog"
+    )
+    
+    # Write work order
+    work_order_path = f"{job_dir}/work_order.yaml"
+    work_order.to_yaml(work_order_path)
+    
+    logger.success(f"Created job package: {job_dir}/")
+    logger.info(f"  - work_order.yaml")
+    logger.info(f"  - manifest.jsonl ({len(data)} tasks)")
+    logger.info(f"  Strategy: {args.strategy}")
+    logger.info(f"  Backlog: {work_order.backlog_key}")
 
 if __name__ == "__main__":
     main()
+

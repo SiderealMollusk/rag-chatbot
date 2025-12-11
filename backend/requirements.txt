@@ -9,3 +9,4 @@ python-multipart
 requests
 loguru
 google-generativeai
+pyyaml
