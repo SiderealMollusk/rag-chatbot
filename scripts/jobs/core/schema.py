@@ -7,5 +7,6 @@ class ManifestEntry(BaseModel):
     kwargs: Dict[str, Any] = {}
     
     # Metadata for the human operator
+    meta: Dict[str, Any] = {}
     description: Optional[str] = None
     priority: int = 10
