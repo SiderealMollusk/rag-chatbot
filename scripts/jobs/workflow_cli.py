@@ -13,6 +13,7 @@ import argparse
 from pathlib import Path
 
 WORKFLOWS_DIR = "/scripts/jobs/workflows"
+TEMPLATES_DIR = "/scripts/jobs/templates/workflow"
 
 def create_workflow(name: str):
     """Create a new workflow with proper file structure and stubs."""
@@ -30,138 +31,33 @@ def create_workflow(name: str):
     # Create directory
     workflow_dir.mkdir(parents=True, exist_ok=True)
     
-    # Create plan.py stub
-    plan_template = f'''import sys
-import json
-import argparse
-import random
-from core.common import setup_logging, logger, require_context
-from core.work_order import WorkOrder, WorkOrderManifest
-from datetime import datetime
-import os
-
-def generate_{name}_tasks(count: int):
-    """
-    Generate tasks for {name} workflow.
+    # Template substitutions
+    substitutions = {
+        '{{WORKFLOW_NAME}}': name,
+        '{{WORKFLOW_TITLE}}': name.replace('_', ' ').title()
+    }
     
-    TODO: Implement your task generation logic here.
-    """
-    rows = []
-    logger.info(f"Generating {{count}} {name} tasks...")
+    # Copy and process templates
+    templates_path = Path(TEMPLATES_DIR)
     
-    for i in range(1, count + 1):
-        # TODO: Replace this with your actual task structure
-        rows.append({{
-            "task": "tasks.your_task_name",  # Update this
-            "kwargs": {{}},
-            "meta": {{
-                "description": f"{name} Task {{i}}/{{count}}",
-                "id": f"Task-{{i:02d}}"
-            }}
-        }})
-    
-    return rows
-
-def main():
-    setup_logging()
-    require_context('shell')
-    
-    parser = argparse.ArgumentParser(description="Generate {name.replace('_', ' ').title()} Job Packages")
-    parser.add_argument("--count", type=int, default=5, help="Number of tasks to generate")
-    parser.add_argument("--strategy", 
-                       choices=["hybrid_supervisor", "force_metal", "force_cloud"], 
-                       default="hybrid_supervisor",
-                       help="Routing strategy")
-    args = parser.parse_args()
-
-    logger.info(f"Generating {name} job package with {{args.count}} tasks...")
-    
-    # Generate task data
-    data = generate_{name}_tasks(args.count)
-    
-    # Create job package directory
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    job_id = f"{name}_{{timestamp}}"
-    job_dir = f"/data/jobs/{{job_id}}"
-    os.makedirs(job_dir, exist_ok=True)
-    
-    # Write manifest
-    manifest_path = f"{{job_dir}}/manifest.jsonl"
-    with open(manifest_path, 'w') as f:
-        for row in data:
-            f.write(json.dumps(row) + "\\n")
-    
-    # Create work order
-    work_order = WorkOrder(
-        job_id=job_id,
-        name=f"{name.replace('_', ' ').title()} - {{args.count}} tasks",
-        manifest=WorkOrderManifest(
-            path="manifest.jsonl",
-            count=len(data)
-        ),
-        routing_strategy=args.strategy,
-        backlog_key=f"job:{{job_id}}:backlog"
-    )
-    
-    # Write work order
-    work_order_path = f"{{job_dir}}/work_order.yaml"
-    work_order.to_yaml(work_order_path)
-    
-    logger.success(f"Created job package: {{job_dir}}/")
-    logger.info(f"  - work_order.yaml")
-    logger.info(f"  - manifest.jsonl ({{len(data)}} tasks)")
-    logger.info(f"  Strategy: {{args.strategy}}")
-    logger.info(f"  Backlog: {{work_order.backlog_key}}")
-
-if __name__ == "__main__":
-    main()
-'''
-    
-    # Create README.md stub
-    readme_template = f'''# {name.replace('_', ' ').title()} Workflow
-
-## Purpose
-TODO: Describe what this workflow does.
-
-## Usage
-
-### 1. Plan
-Generate a job package:
-```bash
-python /scripts/jobs/workflows/{name}/plan.py --count 10
-```
-
-### 2. Dispatch
-Queue the tasks:
-```bash
-python /scripts/jobs/core/dispatch_v2.py /data/jobs/{name}_YYYYMMDD_HHMMSS/work_order.yaml
-```
-
-### 3. Execute
-Run the conductor:
-```bash
-python /scripts/jobs/core/conductor_v2.py /data/jobs/{name}_YYYYMMDD_HHMMSS/work_order.yaml
-```
-
-### 4. Check Status
-Monitor progress:
-```bash
-python /scripts/jobs/core/status.py /data/jobs/{name}_YYYYMMDD_HHMMSS/work_order.yaml
-```
-
-## Task Definition
-TODO: Document the structure of tasks this workflow generates.
-
-## Dependencies
-TODO: List any required Celery tasks, external services, etc.
-'''
-    
-    # Write files
-    (workflow_dir / "plan.py").write_text(plan_template)
-    (workflow_dir / "README.md").write_text(readme_template)
-    
-    # Make plan.py executable
-    os.chmod(workflow_dir / "plan.py", 0o755)
+    for template_file in templates_path.glob('*.template'):
+        # Read template
+        template_content = template_file.read_text()
+        
+        # Apply substitutions
+        for placeholder, value in substitutions.items():
+            template_content = template_content.replace(placeholder, value)
+        
+        # Determine output filename (remove .template suffix)
+        output_filename = template_file.stem  # Removes .template
+        output_path = workflow_dir / output_filename
+        
+        # Write processed template
+        output_path.write_text(template_content)
+        
+        # Make plan.py executable
+        if output_filename == 'plan.py':
+            os.chmod(output_path, 0o755)
     
     print(f"✅ Created workflow: {name}")
     print(f"📁 Location: {workflow_dir}/")
