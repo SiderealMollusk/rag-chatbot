@@ -265,10 +265,12 @@ def get_job_status():
     metal = r.llen("queue_metal")
     cloud = r.llen("queue_cloud")
     
-    # "Done" Count (Expensive but functional for dev)
-    # Using keys() is blocking on large DBs, but fine for our scale
-    done_keys = r.keys("celery-task-meta-*")
-    done = len(done_keys)
+    # "Done" Count (Reliable Counter)
+    done = r.get("job_system:stats:done")
+    if done is None:
+        done = 0
+    else:
+        done = int(done)
     
     return {
         "backlog": backlog,

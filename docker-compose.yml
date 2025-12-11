@@ -14,6 +14,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=sqlite:////data/bible.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   # The Face: Next.js
@@ -52,7 +53,9 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-    command: celery -A tasks worker -Q queue_cloud -c 10 --loglevel=info
+      - CELERY_WORKER_PREFETCH_MULTIPLIER=1
+    # -Ofair disables prefetching optimizations, keeping tasks in Redis until ready
+    command: celery -A tasks worker -Q queue_cloud -c 10 --loglevel=info -Ofair
     depends_on:
       - redis
       - api
@@ -70,9 +73,10 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - OLLAMA_URL=http://host.docker.internal:11434/api/chat
+      - CELERY_WORKER_PREFETCH_MULTIPLIER=1
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command: celery -A tasks worker -Q queue_metal -c 1 --loglevel=info
+    command: celery -A tasks worker -Q queue_metal -c 1 --loglevel=info -Ofair
     depends_on:
       - redis
       - api

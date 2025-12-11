@@ -8,19 +8,21 @@ export default function JobsPage() {
 
     useEffect(() => {
         const fetchData = async () => {
+            const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/jobs/status`
             try {
                 // Assume API is proxied or using env var, but for localhost dev:
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/jobs/status`)
+                // console.log("Fetching job status from:", url)
+                const response = await fetch(url)
                 const result = await response.json()
                 setData(result)
                 setLoading(false)
             } catch (e) {
-                console.error("Failed to fetch job status", e)
+                console.error(`Failed to fetch job status from ${url}`, e)
             }
         }
 
-        // Poll every 1s
-        const interval = setInterval(fetchData, 1000)
+        // Poll every 1.5s
+        const interval = setInterval(fetchData, 1500)
         fetchData() // Initial fetch
 
         return () => clearInterval(interval)
@@ -37,6 +39,11 @@ export default function JobsPage() {
         <div className="min-h-screen bg-black text-white p-8">
             <div className="max-w-4xl mx-auto space-y-8">
                 <h1 className="text-3xl font-bold text-center mb-12 text-zinc-300">Hybrid Job Supervisor</h1>
+
+                <div className="bg-amber-900/30 border border-amber-700 p-4 rounded text-center text-amber-200 text-sm">
+                    ⚠️ <b>Note:</b> Queues may appear empty due to efficient worker prefetching.<br />
+                    Tasks "blink" out of Redis as they are instantly reserved by workers.
+                </div>
 
                 {/* The Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">

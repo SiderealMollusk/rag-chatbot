@@ -1,4 +1,6 @@
 import time
+import redis
+import os
 from tasks import app
 from loguru import logger
 
@@ -27,6 +29,14 @@ def sleep_task(self, seconds: int):
     time.sleep(seconds)
     
     actual_end = datetime.now()
+    
+    # Phone back to Redis (Hook)
+    try:
+        r = redis.from_url(os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0'))
+        r.incr("job_system:stats:done")
+    except Exception as e:
+        logger.warning(f"Failed to update stats: {e}")
+
     logger.bind(task_id=self.request.id).success(f"Job Finished: Woke up at {actual_end.strftime('%H:%M:%S')}!")
     return {
         "status": "slept", 
