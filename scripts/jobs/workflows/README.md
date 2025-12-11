@@ -7,12 +7,10 @@ The system is designed so that all workflows follow the same lifecycle:
 
 | Stage | Action | Trigger | Inputs | Outputs | Context |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Stage | Action | Trigger | Inputs | Outputs | Context |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Plan** | Generate specific tasks | `python scripts/jobs/workflows/<WORKFLOW>/plan.py` | CLI Args | `manifest.jsonl` | **Shell** |
-| **2. Dispatch** | Queue tasks | `python scripts/jobs/core/dispatch.py` | `manifest.jsonl` | Redis List | **Shell** |
-| **3. Execute** | Route & Run | `python scripts/jobs/core/conductor.py` | Redis Backlog | Workers | **Shell** |
-| **4. Verify** | Validate results | `python scripts/jobs/workflows/<WORKFLOW>/verify.py` | Completion State | Logs | **Shell** |
+| **1. Plan** | Generate specific tasks | `python scripts/jobs/workflows/<WORKFLOW>/plan.py` | CLI Args | `manifest.jsonl` | **Shell Container** |
+| **2. Dispatch** | Queue tasks | `python scripts/jobs/core/dispatch.py` | `manifest.jsonl` | Redis List | **Shell Container** |
+| **3. Execute** | Route & Run | `python scripts/jobs/core/conductor.py` | Redis Backlog | Workers | **Shell Container** |
+| **4. Verify** | Validate results | `python scripts/jobs/workflows/<WORKFLOW>/verify.py` | Completion State | Logs | **Shell Container** |
 
 ---
 
