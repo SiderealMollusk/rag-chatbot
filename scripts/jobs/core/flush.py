@@ -40,14 +40,25 @@ def main():
         return
 
     if not args.force:
-        val = input(f"WARNING: This will delete ALL {key_count} keys in the Redis DB. Continue? [y/N] ")
-        if val.lower() != 'y':
-            logger.info("Aborted.")
+        print("\n" + "="*70)
+        print("⚠️  WARNING: NUCLEAR OPTION ⚠️")
+        print("="*70)
+        print(f"\nThis will DELETE ALL {key_count} keys from Redis, including:")
+        print(f"  • {len(queues)} Queue/Backlog keys")
+        print(f"  • {len(results)} Task Result keys")
+        print(f"  • {len(others)} Other keys")
+        print("\n⚠️  THIS CANNOT BE UNDONE ⚠️")
+        print("="*70 + "\n")
+        
+        val = input(f"Type 'FLUSH' to confirm deletion of ALL Redis data: ")
+        if val != 'FLUSH':
+            logger.info("Aborted. (Expected 'FLUSH' exactly)")
             sys.exit(0)
 
     # Flush
+    logger.warning("Flushing Redis database...")
     r.flushdb()
-    logger.success("Redis Database Flushed. Job history and queues cleared.")
+    logger.success("Redis Database Flushed. All data cleared.")
 
 if __name__ == "__main__":
     main()
