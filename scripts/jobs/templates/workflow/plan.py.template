@@ -79,6 +79,24 @@ def main():
     logger.info(f"  - manifest.jsonl ({len(data)} tasks)")
     logger.info(f"  Strategy: {args.strategy}")
     logger.info(f"  Backlog: {work_order.backlog_key}")
+    
+    # Print next steps
+    print(f"\n{'='*70}")
+    print(f"📦 JOB PACKAGE CREATED")
+    print(f"{'='*70}")
+    print(f"\n📁 Files:")
+    print(f"   Work Order:  {work_order_path}")
+    print(f"   Manifest:    {manifest_path}")
+    print(f"\n🚀 Next Commands:")
+    print(f"   # Dispatch")
+    print(f"   python /scripts/jobs/core/dispatch_v2.py {work_order_path}")
+    print(f"\n   # Execute")
+    print(f"   python /scripts/jobs/core/conductor_v2.py {work_order_path}")
+    print(f"\n   # Check Status")
+    print(f"   python /scripts/jobs/core/status.py {work_order_path}")
+    print(f"\n   # View Execution Log")
+    print(f"   cat {job_dir}/execution.log")
+    print(f"\n{'='*70}\n")
 
 if __name__ == "__main__":
     main()
