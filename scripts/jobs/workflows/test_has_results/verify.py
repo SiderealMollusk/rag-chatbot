@@ -12,14 +12,22 @@ app = Celery('movie_bible',
 
 def verify_task(task_name, result):
     """
-    Validation logic specific to task type.
-    
-    TODO: Implement your task-specific validation logic here.
+    Validation logic for compute_multiply tasks.
+    Verifies that the multiplication result is correct.
     """
-    # Example validation patterns:
-    # if task_name == "tasks.your_task":
-    #     if result.get("status") == "success": return True
-    #     return False
+    if task_name == "tasks.compute_multiply":
+        # Extract values
+        a = result.get("input_a")
+        b = result.get("input_b")
+        actual_result = result.get("result")
+        expected_result = a * b if (a is not None and b is not None) else None
+        
+        # Verify
+        if actual_result == expected_result:
+            return True
+        else:
+            logger.error(f"Multiplication error: {a} × {b} = {actual_result}, expected {expected_result}")
+            return False
     
     return True  # Default: assume success
 

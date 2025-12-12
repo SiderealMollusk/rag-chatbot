@@ -9,21 +9,33 @@ import os
 
 def generate_test_has_results_tasks(count: int):
     """
-    Generate tasks for test_has_results workflow.
+    Generate multiplication tasks with random inputs and sleep durations.
     
-    TODO: Implement your task generation logic here.
+    Each task:
+    - Multiplies two random numbers (1-100)
+    - Sleeps for 3-6 seconds (for observation)
+    - Returns structured results
     """
     rows = []
-    logger.info(f"Generating {count} test_has_results tasks...")
+    logger.info(f"Generating {count} multiplication tasks (3-6s sleep each)...")
     
     for i in range(1, count + 1):
-        # TODO: Replace this with your actual task structure
+        # Random inputs
+        a = random.randint(1, 100)
+        b = random.randint(1, 100)
+        sleep_dur = random.randint(3, 6)
+        
         rows.append({
-            "task": "tasks.your_task_name",  # Update this
-            "kwargs": {},
+            "task": "tasks.compute_multiply",
+            "kwargs": {
+                "a": a,
+                "b": b,
+                "sleep_duration": sleep_dur
+            },
             "meta": {
-                "description": f"test_has_results Task {i}/{count}",
-                "id": f"Task-{i:02d}"
+                "description": f"Compute {a} × {b} (sleep {sleep_dur}s)",
+                "id": f"Task-{i:02d}",
+                "expected_result": a * b  # For verification
             }
         })
     
