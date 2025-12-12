@@ -22,3 +22,4 @@ app.conf.task_routes = {
 import tasks.diagnostics
 import tasks.crud
 import tasks.rag
+import tasks.compute
